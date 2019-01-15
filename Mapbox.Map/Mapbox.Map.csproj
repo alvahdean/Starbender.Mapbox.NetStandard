@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Mapbox / Starbender Systems</Authors>
+    <Product>Mapbox</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Mapbox Map API for NETStandard</Description>
+    <PackageProjectUrl>https://www.mapbox.com/api-documentation/</PackageProjectUrl>
+    <PackageLicenseUrl>https://www.mapbox.com</PackageLicenseUrl>
+    <Copyright>Mapbox 2016</Copyright>
+    <RepositoryUrl>https://github.com/mapbox/mapbox-sdk-cs</RepositoryUrl>
+    <RepositoryType>github.com</RepositoryType>
+    <Configurations>Debug;Release;DebugNet</Configurations>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="mapbox-vector-tile" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mapbox.Platform\Mapbox.Platform.csproj" />
+    <ProjectReference Include="..\MapBox.Utils\MapBox.Utils.csproj" />
+  </ItemGroup>
+
+</Project>
