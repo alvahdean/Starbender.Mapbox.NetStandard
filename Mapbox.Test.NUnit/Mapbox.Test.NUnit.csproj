@@ -6,6 +6,8 @@
     <IsPackable>false</IsPackable>
 
     <Configurations>Debug;Release;DebugNet</Configurations>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
