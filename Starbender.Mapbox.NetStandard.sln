@@ -19,9 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libaries", "Libaries", "{0C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{AD7639BE-6672-4602-931B-75095F0BB6A0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{246AAD02-2936-4FB1-A3D2-3655EDD88C6B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{7E40204B-1B8F-4B95-B787-F6521E716975}"
 	ProjectSection(SolutionItems) = preProject
-		nupub.sh = nupub.sh
+		appveyor.yaml = appveyor.yaml
 	EndProjectSection
 EndProject
 Global
