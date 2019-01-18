@@ -12,6 +12,7 @@
     <RepositoryUrl>https://github.com/mapbox/mapbox-sdk-cs</RepositoryUrl>
     <RepositoryType>github.com</RepositoryType>
     <Configurations>Debug;Release;DebugNet</Configurations>
+    <ApplicationIcon>starbender.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

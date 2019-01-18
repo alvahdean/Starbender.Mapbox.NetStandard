@@ -12,10 +12,10 @@
     <RepositoryUrl>https://github.com/mapbox/mapbox-sdk-cs</RepositoryUrl>
     <RepositoryType>github.com</RepositoryType>
     <Configurations>Debug;Release;DebugNet</Configurations>
+    <ApplicationIcon>starbender.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mapbox.Map\Mapbox.Map.csproj" />
     <ProjectReference Include="..\Mapbox.Platform\Mapbox.Platform.csproj" />
     <ProjectReference Include="..\MapBox.Utils\MapBox.Utils.csproj" />
   </ItemGroup>

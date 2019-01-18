@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Mapbox / Starbender Systems</Authors>
     <Product>Mapbox</Product>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Description>Mapbox Directions API for NETStandard</Description>
     <PackageProjectUrl>https://www.mapbox.com/api-documentation/</PackageProjectUrl>
     <PackageLicenseUrl>https://www.mapbox.com</PackageLicenseUrl>
@@ -12,6 +12,7 @@
     <RepositoryUrl>https://github.com/mapbox/mapbox-sdk-cs</RepositoryUrl>
     <RepositoryType>github.com</RepositoryType>
     <Configurations>Debug;Release;DebugNet</Configurations>
+    <ApplicationIcon>starbender.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
