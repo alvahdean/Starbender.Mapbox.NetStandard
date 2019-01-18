@@ -13,12 +13,14 @@ dotnet_csproj:
   informational_version: '{version}'
 nuget:
   account_feed: true
-  disable_publish_on_pr: true
+  project_feed: true
 build:
   publish_nuget: true
   publish_nuget_symbols: true
   include_nuget_references: true
   verbosity: minimal
+before_package:
+- pwsh: dotnet restore
 test: off
 deploy:
 - provider: NuGet
