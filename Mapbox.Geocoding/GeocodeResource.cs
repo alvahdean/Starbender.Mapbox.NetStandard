@@ -35,9 +35,6 @@ namespace Mapbox.Geocoding
         // Optional
         private string[] types;
 
-        /// <summary> Gets or sets the query. </summary>
-        public abstract T Query { get; set; }
-
         /// <summary> Gets the API endpoint as a partial URL path. </summary>
         public override string ApiEndpoint
         {
@@ -55,6 +52,9 @@ namespace Mapbox.Geocoding
                 return this.mode;
             }
         }
+
+        /// <summary> Gets or sets the query. </summary>
+        public abstract T Query { get; set; }
 
         /// <summary> Gets or sets which feature types to return results for. </summary>
         public string[] Types

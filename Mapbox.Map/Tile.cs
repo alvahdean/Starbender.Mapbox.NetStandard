@@ -4,214 +4,242 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Mapbox.Map {
-	using System;
-	using Mapbox.Platform;
-	using System.Linq;
-	using System.Collections.Generic;
-	using System.Collections.ObjectModel;
+namespace Mapbox.Map
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
 
+    using Mapbox.Platform;
 
-	/// <summary>
-	///    A Map tile, a square with vector or raster data representing a geographic
-	///    bounding box. More info <see href="https://en.wikipedia.org/wiki/Tiled_web_map">
-	///    here </see>.
-	/// </summary>
-	public abstract class Tile {
+    /// <summary>
+    ///    A Map tile, a square with vector or raster data representing a geographic
+    ///    bounding box. More info <see href="https://en.wikipedia.org/wiki/Tiled_web_map">
+    ///    here </see>.
+    /// </summary>
+    public abstract class Tile
+    {
+        private Action _callback;
 
+        private List<Exception> _exceptions;
 
-		private CanonicalTileId _id;
-		private List<Exception> _exceptions;
-		private State _state = State.New;
-		private IAsyncRequest _request;
-		private Action _callback;
+        private CanonicalTileId _id;
 
+        private IAsyncRequest _request;
 
-		/// <summary> Tile state. </summary>
-		public enum State {
-			/// <summary> New tile, not yet initialized. </summary>
-			New,
-			/// <summary> Loading data. </summary>
-			Loading,
-			/// <summary> Data loaded and parsed. </summary>
-			Loaded,
-			/// <summary> Data loading cancelled. </summary>
-			Canceled
-		}
+        private State _state = State.New;
 
-		/// <summary> Gets the <see cref="T:Mapbox.Map.CanonicalTileId"/> identifier. </summary>
-		/// <value> The canonical tile identifier. </value>
-		public CanonicalTileId Id {
-			get { return _id; }
-			set { _id = value; }
-		}
+        /// <summary> Tile state. </summary>
+        public enum State
+        {
+            /// <summary> New tile, not yet initialized. </summary>
+            New,
 
+            /// <summary> Loading data. </summary>
+            Loading,
 
-		/// <summary>Flag to indicate if the request was successful</summary>
-		public bool HasError {
-			get {
-				return _exceptions == null ? false : _exceptions.Count > 0;
-			}
-		}
+            /// <summary> Data loaded and parsed. </summary>
+            Loaded,
 
+            /// <summary> Data loading cancelled. </summary>
+            Canceled
+        }
 
-		/// <summary> Exceptions that might have occured during creation of the tile. </summary>
-		public ReadOnlyCollection<Exception> Exceptions {
-			get { return null == _exceptions ? null : _exceptions.AsReadOnly(); }
-		}
+        /// <summary>
+        ///     Gets the current state. When fully loaded, you must
+        ///     check if the data actually arrived and if the tile
+        ///     is accusing any error.
+        /// </summary>
+        /// <value> The tile state. </value>
+        public State CurrentState
+        {
+            get
+            {
+                return _state;
+            }
+        }
 
+        /// <summary> Exceptions that might have occured during creation of the tile. </summary>
+        public ReadOnlyCollection<Exception> Exceptions
+        {
+            get
+            {
+                return null == _exceptions ? null : _exceptions.AsReadOnly();
+            }
+        }
 
-		/// <summary> Messages of exceptions otherwise empty string. </summary>
-		public string ExceptionsAsString {
-			get {
-				if (null == _exceptions || _exceptions.Count == 0) { return string.Empty; }
-				return string.Join(Environment.NewLine, _exceptions.Select(e => e.Message).ToArray());
-			}
-		}
+        /// <summary> Messages of exceptions otherwise empty string. </summary>
+        public string ExceptionsAsString
+        {
+            get
+            {
+                if (null == _exceptions || _exceptions.Count == 0)
+                {
+                    return string.Empty;
+                }
 
+                return string.Join(Environment.NewLine, _exceptions.Select(e => e.Message).ToArray());
+            }
+        }
 
-		/// <summary>
-		/// Sets the error message.
-		/// </summary>
-		/// <param name="errorMessage"></param>
-		internal void AddException(Exception ex) {
-			if (null == _exceptions) { _exceptions = new List<Exception>(); }
-			_exceptions.Add(ex);
-		}
+        /// <summary>Flag to indicate if the request was successful</summary>
+        public bool HasError
+        {
+            get
+            {
+                return _exceptions == null ? false : _exceptions.Count > 0;
+            }
+        }
 
+        /// <summary> Gets the <see cref="T:Mapbox.Map.CanonicalTileId"/> identifier. </summary>
+        /// <value> The canonical tile identifier. </value>
+        public CanonicalTileId Id
+        {
+            get
+            {
+                return _id;
+            }
 
-		/// <summary>
-		///     Gets the current state. When fully loaded, you must
-		///     check if the data actually arrived and if the tile
-		///     is accusing any error.
-		/// </summary>
-		/// <value> The tile state. </value>
-		public State CurrentState {
-			get {
-				return _state;
-			}
-		}
+            set
+            {
+                _id = value;
+            }
+        }
 
+        /// <summary>
+        ///     Cancels the request for the <see cref="T:Mapbox.Map.Tile"/> object.
+        ///     It will stop a network request and set the tile's state to Canceled.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// // Do not request tiles that we are already requesting
+        ///	// but at the same time exclude the ones we don't need
+        ///	// anymore, cancelling the network request.
+        ///	tiles.RemoveWhere((T tile) =>
+        ///	{
+        ///		if (cover.Remove(tile.Id))
+        ///		{
+        ///			return false;
+        ///		}
+        ///		else
+        ///		{
+        ///			tile.Cancel();
+        ///			NotifyNext(tile);
+        ///			return true;			
+        /// 	}
+        ///	});
+        /// </code>
+        /// </example>
+        public void Cancel()
+        {
+            if (_request != null)
+            {
+                _request.Cancel();
+                _request = null;
+            }
 
-		/// <summary>
-		///     Initializes the <see cref="T:Mapbox.Map.Tile"/> object. It will
-		///     start a network request and fire the callback when completed.
-		/// </summary>
-		/// <param name="param"> Initialization parameters. </param>
-		/// <param name="callback"> The completion callback. </param>
-		public void Initialize(Parameters param, Action callback) {
-			Cancel();
+            _state = State.Canceled;
+        }
 
-			_state = State.Loading;
-			_id = param.Id;
-			_request = param.Fs.Request(MakeTileResource(param.MapId).GetUrl(), HandleTileResponse);
-			_callback = callback;
-		}
+        /// <summary>
+        ///     Initializes the <see cref="T:Mapbox.Map.Tile"/> object. It will
+        ///     start a network request and fire the callback when completed.
+        /// </summary>
+        /// <param name="param"> Initialization parameters. </param>
+        /// <param name="callback"> The completion callback. </param>
+        public void Initialize(Parameters param, Action callback)
+        {
+            Cancel();
 
+            _state = State.Loading;
+            _id = param.Id;
+            _request = param.Fs.Request(MakeTileResource(param.MapId).GetUrl(), HandleTileResponse);
+            _callback = callback;
+        }
 
-		/// <summary>
-		///     Returns a <see cref="T:System.String"/> that represents the current
-		///     <see cref="T:Mapbox.Map.Tile"/>.
-		/// </summary>
-		/// <returns>
-		///     A <see cref="T:System.String"/> that represents the current
-		///     <see cref="T:Mapbox.Map.Tile"/>.
-		/// </returns>
-		public override string ToString() {
-			return Id.ToString();
-		}
+        /// <summary>
+        ///     Returns a <see cref="T:System.String"/> that represents the current
+        ///     <see cref="T:Mapbox.Map.Tile"/>.
+        /// </summary>
+        /// <returns>
+        ///     A <see cref="T:System.String"/> that represents the current
+        ///     <see cref="T:Mapbox.Map.Tile"/>.
+        /// </returns>
+        public override string ToString()
+        {
+            return Id.ToString();
+        }
 
+        /// <summary>
+        /// Sets the error message.
+        /// </summary>
+        /// <param name="errorMessage"></param>
+        internal void AddException(Exception ex)
+        {
+            if (null == _exceptions)
+            {
+                _exceptions = new List<Exception>();
+            }
 
-		/// <summary>
-		///     Cancels the request for the <see cref="T:Mapbox.Map.Tile"/> object.
-		///     It will stop a network request and set the tile's state to Canceled.
-		/// </summary>
-		/// <example>
-		/// <code>
-		/// // Do not request tiles that we are already requesting
-		///	// but at the same time exclude the ones we don't need
-		///	// anymore, cancelling the network request.
-		///	tiles.RemoveWhere((T tile) =>
-		///	{
-		///		if (cover.Remove(tile.Id))
-		///		{
-		///			return false;
-		///		}
-		///		else
-		///		{
-		///			tile.Cancel();
-		///			NotifyNext(tile);
-		///			return true;			
-		/// 	}
-		///	});
-		/// </code>
-		/// </example>
-		public void Cancel() {
-			if (_request != null) {
-				_request.Cancel();
-				_request = null;
-			}
+            _exceptions.Add(ex);
+        }
 
-			_state = State.Canceled;
-		}
+        // Get the tile resource (raster/vector/etc).
+        internal abstract TileResource MakeTileResource(string mapid);
 
+        // Decode the tile.
+        internal abstract bool ParseTileData(byte[] data);
 
-		// Get the tile resource (raster/vector/etc).
-		internal abstract TileResource MakeTileResource(string mapid);
+        // TODO: Currently the tile decoding is done on the main thread. We must implement
+        // a Worker class to abstract this, so on platforms that support threads (like Unity
+        // on the desktop, Android, etc) we can use worker threads and when building for
+        // the browser, we keep it single-threaded.
+        private void HandleTileResponse(Response response)
+        {
+            if (response.HasError)
+            {
+                response.Exceptions.ToList().ForEach(e => AddException(e));
+            }
+            else
+            {
+                // only try to parse if request was successful
 
+                // current implementation doesn't need to check if parsing is successful:
+                // * Mapbox.Map.VectorTile.ParseTileData() already adds any exception to the list
+                // * Mapbox.Map.RasterTile.ParseTileData() doesn't do any parsing
+                ParseTileData(response.Data);
+            }
 
-		// Decode the tile.
-		internal abstract bool ParseTileData(byte[] data);
+            _state = State.Loaded;
+            _callback();
+        }
 
+        /// <summary>
+        ///    Parameters for initializing a Tile object.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// var parameters = new Tile.Parameters();
+        /// parameters.Fs = MapboxAccess.Instance;
+        /// parameters.Id = new CanonicalTileId(_zoom, _tileCoorindateX, _tileCoordinateY);
+        /// parameters.MapId = "mapbox.mapbox-streets-v7";
+        /// </code>
+        /// </example>
+        public struct Parameters
+        {
+            /// <summary> The tile id. </summary>
+            public CanonicalTileId Id;
 
-		// TODO: Currently the tile decoding is done on the main thread. We must implement
-		// a Worker class to abstract this, so on platforms that support threads (like Unity
-		// on the desktop, Android, etc) we can use worker threads and when building for
-		// the browser, we keep it single-threaded.
-		private void HandleTileResponse(Response response) {
+            /// <summary>
+            ///     The tileset map ID, usually in the format "user.mapid". Exceptionally,
+            ///     <see cref="T:Mapbox.Map.RasterTile"/> will take the full style URL
+            ///     from where the tile is composited from, like mapbox://styles/mapbox/streets-v9.
+            /// </summary>
+            public string MapId;
 
-			if (response.HasError) {
-				response.Exceptions.ToList().ForEach(e => AddException(e));
-			} else {
-				// only try to parse if request was successful
-
-				// current implementation doesn't need to check if parsing is successful:
-				// * Mapbox.Map.VectorTile.ParseTileData() already adds any exception to the list
-				// * Mapbox.Map.RasterTile.ParseTileData() doesn't do any parsing
-				ParseTileData(response.Data);
-			}
-
-			_state = State.Loaded;
-			_callback();
-		}
-
-
-		/// <summary>
-		///    Parameters for initializing a Tile object.
-		/// </summary>
-		/// <example>
-		/// <code>
-		/// var parameters = new Tile.Parameters();
-		/// parameters.Fs = MapboxAccess.Instance;
-		/// parameters.Id = new CanonicalTileId(_zoom, _tileCoorindateX, _tileCoordinateY);
-		/// parameters.MapId = "mapbox.mapbox-streets-v7";
-		/// </code>
-		/// </example>
-		public struct Parameters {
-			/// <summary> The tile id. </summary>
-			public CanonicalTileId Id;
-
-			/// <summary>
-			///     The tileset map ID, usually in the format "user.mapid". Exceptionally,
-			///     <see cref="T:Mapbox.Map.RasterTile"/> will take the full style URL
-			///     from where the tile is composited from, like mapbox://styles/mapbox/streets-v9.
-			/// </summary>
-			public string MapId;
-
-			/// <summary> The data source abstraction. </summary>
-			public IFileSource Fs;
-		}
-
-
-	}
+            /// <summary> The data source abstraction. </summary>
+            public IFileSource Fs;
+        }
+    }
 }

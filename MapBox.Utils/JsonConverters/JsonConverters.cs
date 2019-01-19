@@ -6,31 +6,32 @@
 
 namespace Mapbox.Utils.JsonConverters
 {
-	using Newtonsoft.Json;
+    using Newtonsoft.Json;
 
-	/// <summary>
-	/// Custom json converters.
-	/// </summary>
-	public static class JsonConverters
-	{
-		/// <summary>
-		/// Array of converters.
-		/// </summary>
-		private static JsonConverter[] converters =
-		{
-			new LonLatToVector2dConverter(),
-			new BboxToVector2dBoundsConverter(),
-			new PolylineToVector2dListConverter()
-		};
+    /// <summary>
+    /// Custom json converters.
+    /// </summary>
+    public static class JsonConverters
+    {
+        /// <summary>
+        /// Array of converters.
+        /// </summary>
+        private static JsonConverter[] converters =
+            {
+                new LonLatToVector2dConverter(), new BboxToVector2dBoundsConverter(),
+                new PolylineToVector2dListConverter()
+            };
 
-		/// <summary>
-		/// Gets the converters.
-		/// </summary>
-		/// <value>The converters.</value>
-		public static JsonConverter[] Converters {
-			get {
-				return converters;
-			}
-		}
-	}
+        /// <summary>
+        /// Gets the converters.
+        /// </summary>
+        /// <value>The converters.</value>
+        public static JsonConverter[] Converters
+        {
+            get
+            {
+                return converters;
+            }
+        }
+    }
 }

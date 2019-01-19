@@ -3,20 +3,9 @@ image: Visual Studio 2017
 configuration: Debug
 platform: Any CPU
 clone_folder: C:\Development\Projects\Starbender\Libraries\Starbender.Mapbox.NetStandard
-dotnet_csproj:
-  patch: true
-  file: '**\*.csproj'
-  version: '{version}'
-  package_version: '{version}'
-  assembly_version: '{version}'
-  file_version: '{version}'
-  informational_version: '{version}'
 before_build:
 - cmd: dotnet restore
 build:
-  publish_nuget: true
-  publish_nuget_symbols: true
-  include_nuget_references: true
   verbosity: minimal
 test: off
 deploy:
@@ -24,6 +13,6 @@ deploy:
   server: http://nuget.starbendersystems.com/nuget/nuget
   api_key:
     secure: /GBqanseqbfAb5ul13Ss0ND8DcB7jzCJLeR/uZNvK4pOfhLGWfsEcxc+DEv6jyo+
-  skip_symbols: true
+  skip_symbols: false
   on:
     branch: master

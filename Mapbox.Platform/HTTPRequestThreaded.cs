@@ -11,72 +11,67 @@
 
 #if !UNITY
 
-namespace Mapbox.Platform {
-
-
-	using System;
-	using System.Net;
+namespace Mapbox.Platform
+{
 #if !UNITY && !NETSTANDARD2_0
 	using System.Net.Cache;
 #endif
-	using System.IO;
-	using System.Collections.Generic;
-	using System.Threading;
-	using System.ComponentModel;
-	using Mapbox.Utils;
 #if NETSTANDARD2_0
-	using System.Net.Http;
-	using System.Linq;
+    using System;
+    using System.ComponentModel;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+
 #endif
 
-	//using System.Windows.Threading;
+    // using System.Windows.Threading;
+    internal sealed class HTTPRequestThreaded : IAsyncRequest
+    {
+        public bool IsCompleted { get; private set; }
 
-	internal sealed class HTTPRequestThreaded : IAsyncRequest {
-
-
-		public bool IsCompleted { get; private set; }
-
-
-		private Action<Response> _callback;
+        private Action<Response> _callback;
 #if !NETSTANDARD2_0
 		private HttpWebRequest _request;
 #else
-		private HttpClient _request;
-		private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private HttpClient _request;
+
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 #endif
 #if !UNITY
-		private SynchronizationContext _sync = AsyncOperationManager.SynchronizationContext;
+        private SynchronizationContext _sync = AsyncOperationManager.SynchronizationContext;
 #endif
-		private int _timeOut;
-		private string _requestUrl;
-		private readonly string _userAgent = "mapbox-sdk-cs";
+        private int _timeOut;
 
+        private string _requestUrl;
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="url"></param>
-		/// <param name="callback"></param>
-		/// <param name="timeOut">seconds</param>
-		public HTTPRequestThreaded(string url, Action<Response> callback, int timeOut = 10) {
+        private readonly string _userAgent = "mapbox-sdk-cs";
 
-			IsCompleted = false;
-			_callback = callback;
-			_timeOut = timeOut;
-			_requestUrl = url;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="callback"></param>
+        /// <param name="timeOut">seconds</param>
+        public HTTPRequestThreaded(string url, Action<Response> callback, int timeOut = 10)
+        {
+            IsCompleted = false;
+            _callback = callback;
+            _timeOut = timeOut;
+            _requestUrl = url;
 
-			setupRequest();
-			getResponseAsync(_request, EvaluateResponse);
-		}
+            setupRequest();
+            getResponseAsync(_request, EvaluateResponse);
+        }
 
-
-		private void setupRequest() {
-
+        private void setupRequest()
+        {
 #if !NETSTANDARD2_0
 			_request = WebRequest.Create(_requestUrl) as HttpWebRequest;
 			_request.UserAgent = _userAgent;
-			//_hwr.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36";
-			//_hwr.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
+			
+// _hwr.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36";
+			// _hwr.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
 			_request.Credentials = CredentialCache.DefaultCredentials;
 			_request.KeepAlive = true;
 			_request.ProtocolVersion = HttpVersion.Version11; // improved performance
@@ -86,7 +81,7 @@ namespace Mapbox.Platform {
 			// set ConnectionLimit per request
 			// https://msdn.microsoft.com/en-us/library/system.net.httpwebrequest(v=vs.90).aspx#Remarks
 			// use a value that is 12 times the number of CPUs on the local computer
-			_request.ServicePoint.ConnectionLimit  = Environment.ProcessorCount * 6;
+			_request.ServicePoint.ConnectionLimit = Environment.ProcessorCount * 6;
 
 			_request.ServicePoint.UseNagleAlgorithm = true;
 			_request.ServicePoint.Expect100Continue = false;
@@ -94,70 +89,77 @@ namespace Mapbox.Platform {
 			_request.Method = "GET";
 			_request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
 			_request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-			//_hwr.Timeout = timeOut * 1000; doesn't work in async calls, see below
+			
+// _hwr.Timeout = timeOut * 1000; doesn't work in async calls, see below
 
 #else
-			HttpClientHandler handler = new HttpClientHandler() {
-				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-				AllowAutoRedirect = true,
-				UseDefaultCredentials = true
+            HttpClientHandler handler = new HttpClientHandler()
+                                            {
+                                                AutomaticDecompression =
+                                                    DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                                                AllowAutoRedirect = true,
+                                                UseDefaultCredentials = true
+                                            };
+            _request = new HttpClient(handler);
+            _request.DefaultRequestHeaders.Add("User-Agent", _userAgent);
+            _request.Timeout = TimeSpan.FromSeconds(_timeOut);
 
-			};
-			_request = new HttpClient(handler);
-			_request.DefaultRequestHeaders.Add("User-Agent", _userAgent);
-			_request.Timeout = TimeSpan.FromSeconds(_timeOut);
-
-			// TODO: how to set ConnectionLimit? ServicePoint.ConnectionLimit doesn't seem to be available.
+            // TODO: how to set ConnectionLimit? ServicePoint.ConnectionLimit doesn't seem to be available.
 #endif
 
 #if !UNITY && !NETSTANDARD2_0
-			// 'NoCacheNoStore' greatly reduced the number of faulty request
-			// seems that .Net caching and Mapbox API don't play well together
-			_request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
+
+// 'NoCacheNoStore' greatly reduced the number of faulty request
+
+// seems that .Net caching and Mapbox API don't play well together
+			_request.CachePolicy =
+ new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
 #endif
-		}
-
-
+        }
 
 #if NETSTANDARD2_0
 
-		private async void getResponseAsync(HttpClient request, Action<HttpResponseMessage, Exception> gotResponse) {
+        private async void getResponseAsync(HttpClient request, Action<HttpResponseMessage, Exception> gotResponse)
+        {
+            // TODO: implement a strategy similar to the full .Net one to avoid blocking of 'GetAsync()'
+            // see 'Remarks' https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=netcore-1.1#System_Net_Http_HttpClient_Timeout
+            // "A Domain Name System (DNS) query may take up to 15 seconds to return or time out."
+            HttpResponseMessage response = null;
+            try
+            {
+                response = await request.GetAsync(_requestUrl, _cancellationTokenSource.Token);
+                gotResponse(response, null);
+            }
+            catch (Exception ex)
+            {
+                gotResponse(response, ex);
+            }
+        }
 
-			// TODO: implement a strategy similar to the full .Net one to avoid blocking of 'GetAsync()'
-			// see 'Remarks' https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.timeout?view=netcore-1.1#System_Net_Http_HttpClient_Timeout
-			// "A Domain Name System (DNS) query may take up to 15 seconds to return or time out."
+        private async void EvaluateResponse(HttpResponseMessage apiResponse, Exception apiEx)
+        {
+            var response = await Response.FromWebResponse(this, apiResponse, apiEx);
 
-			HttpResponseMessage response = null;
-			try {
-				response = await request.GetAsync(_requestUrl, _cancellationTokenSource.Token);
-				gotResponse(response, null);
-			}
-			catch (Exception ex) {
-				gotResponse(response, ex);
-			}
-
-		}
-
-
-		private async void EvaluateResponse(HttpResponseMessage apiResponse, Exception apiEx) {
-
-			var response = await Response.FromWebResponse(this, apiResponse, apiEx);
-
-			// post (async) callback back to the main/UI thread
-			// Unity: SynchronizationContext doesn't do anything
-			//        use the Dispatcher
+            // post (async) callback back to the main/UI thread
+            // Unity: SynchronizationContext doesn't do anything
+            // use the Dispatcher
 #if !UNITY
-			_sync.Post(delegate {
-				_callback(response);
-				IsCompleted = true;
-				_callback = null;
+            _sync.Post(
+                delegate
+                    {
+                        _callback(response);
+                        IsCompleted = true;
+                        _callback = null;
 #if NETSTANDARD2_0
-				if (null != _request) {
-					_request.Dispose();
-					_request = null;
-				}
+                        if (null != _request)
+                        {
+                            _request.Dispose();
+                            _request = null;
+                        }
+
 #endif
-			}, null);
+                    },
+                null);
 #else
 			UnityToolbag.Dispatcher.InvokeAsync(() => {
 				_callback(response);
@@ -171,10 +173,9 @@ namespace Mapbox.Platform {
 #endif
 			});
 #endif
-		}
+        }
 
 #endif
-
 
 #if !NETSTANDARD2_0
 		private void getResponseAsync(HttpWebRequest request, Action<HttpWebResponse, Exception> gotResponse) {
@@ -182,11 +183,10 @@ namespace Mapbox.Platform {
 			// create an additional action wrapper, because of:
 			// https://msdn.microsoft.com/en-us/library/system.net.httpwebrequest.begingetresponse.aspx
 			// The BeginGetResponse method requires some synchronous setup tasks to complete (DNS resolution,
-			//proxy detection, and TCP socket connection, for example) before this method becomes asynchronous.
+			// proxy detection, and TCP socket connection, for example) before this method becomes asynchronous.
 			// As a result, this method should never be called on a user interface (UI) thread because it might
 			// take considerable time(up to several minutes depending on network settings) to complete the
 			// initial synchronous setup tasks before an exception for an error is thrown or the method succeeds.
-
 			Action actionWrapper = () => {
 				try {
 					// BeginInvoke runs on a thread of the thread pool (!= main/UI thread)
@@ -197,17 +197,19 @@ namespace Mapbox.Platform {
 						try { // there's a try/catch here because execution path is different from invokation one, exception here may cause a crash
 							long beforeEndGet = DateTime.Now.Ticks;
 							HttpWebResponse response = (HttpWebResponse)request.EndGetResponse(asycnResult);
-							//long finished = DateTime.Now.Ticks;
-							//long duration = finished - startTicks;
-							//TimeSpan ts = TimeSpan.FromTicks(duration);
-							//TimeSpan tsEndGet = TimeSpan.FromTicks(finished - beforeEndGet);
-							//TimeSpan tsBeginGet = TimeSpan.FromTicks(beforeEndGet - startTicks);
-							//UnityEngine.Debug.Log("received response - " + ts.Milliseconds + "ms" + " BeginGet: " + tsBeginGet.Milliseconds + " EndGet: " + tsEndGet.Milliseconds + " CompletedSynchronously: " + asycnResult.CompletedSynchronously);
+							
+// long finished = DateTime.Now.Ticks;
+							// long duration = finished - startTicks;
+							// TimeSpan ts = TimeSpan.FromTicks(duration);
+							// TimeSpan tsEndGet = TimeSpan.FromTicks(finished - beforeEndGet);
+							// TimeSpan tsBeginGet = TimeSpan.FromTicks(beforeEndGet - startTicks);
+							// UnityEngine.Debug.Log("received response - " + ts.Milliseconds + "ms" + " BeginGet: " + tsBeginGet.Milliseconds + " EndGet: " + tsEndGet.Milliseconds + " CompletedSynchronously: " + asycnResult.CompletedSynchronously);
 							gotResponse(response, null);
 						}
-						// EndGetResponse() throws on on some status codes, try to get response anyway (and status codes)
+						
+// EndGetResponse() throws on on some status codes, try to get response anyway (and status codes)
 						catch (WebException wex) {
-							//another place to watchout for HttpWebRequest.Abort to occur
+							// another place to watchout for HttpWebRequest.Abort to occur
 							if (wex.Status == WebExceptionStatus.RequestCanceled) {
 								gotResponse(null, wex);
 							} else {
@@ -225,7 +227,7 @@ namespace Mapbox.Platform {
 					, null);
 				}
 				catch (Exception ex) {
-					//catch exception from HttpWebRequest.Abort
+					// catch exception from HttpWebRequest.Abort
 					gotResponse(null, ex);
 				}
 			};
@@ -246,11 +248,11 @@ namespace Mapbox.Platform {
 
 		private void EvaluateResponse(HttpWebResponse apiResponse, Exception apiEx) {
 
-			var response = Response.FromWebResponse(this, apiResponse,apiEx);
+			var response = Response.FromWebResponse(this, apiResponse, apiEx);
 
 			// post (async) callback back to the main/UI thread
 			// Unity: SynchronizationContext doesn't do anything
-			//        use the Dispatcher
+			// use the Dispatcher
 #if !UNITY
 			_sync.Post(delegate {
 				_callback(response);
@@ -264,7 +266,8 @@ namespace Mapbox.Platform {
 #endif
 			}, null);
 #else
-			// Unity is playing
+			
+// Unity is playing
 			if (UnityToolbag.Dispatcher._instanceExists) {
 				UnityToolbag.Dispatcher.InvokeAsync(() => {
 					_callback(response);
@@ -297,22 +300,17 @@ namespace Mapbox.Platform {
 		}
 #endif
 
-
-
-		public void Cancel() {
-
+        public void Cancel()
+        {
 #if !NETSTANDARD2_0
 			if (null != _request) {
 				_request.Abort();
 			}
 #else
-			_cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Cancel();
 #endif
-		}
-
-
-	}
+        }
+    }
 }
-
 
 #endif

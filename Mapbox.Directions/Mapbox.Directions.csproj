@@ -4,7 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Mapbox / Starbender Systems</Authors>
     <Product>Mapbox</Product>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Description>Mapbox Directions API for NETStandard</Description>
     <PackageProjectUrl>https://www.mapbox.com/api-documentation/</PackageProjectUrl>
     <PackageLicenseUrl>https://www.mapbox.com</PackageLicenseUrl>
@@ -13,7 +12,27 @@
     <RepositoryType>github.com</RepositoryType>
     <Configurations>Debug;Release;DebugNet</Configurations>
     <ApplicationIcon>starbender.ico</ApplicationIcon>
+
+    <Version>1.0.1</Version>
+
+    <NuGetSource Condition="'$(Configuration)' == 'Release'">http://nuget.starbendersystems.com/nuget/nuget</NuGetSource>
+    <NuGetSourceKey Condition="'$(Configuration)' == 'Release'">802E277B3B75455E841FA307D82D514C</NuGetSourceKey>
   </PropertyGroup>
+
+  <!--MSBump-->
+  <PropertyGroup Condition="$(Configuration) == 'Debug'">
+    <BumpLabel>dev</BumpLabel>
+    <BumpLabelDigits>4</BumpLabelDigits>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <BumpBuild>True</BumpBuild>
+    <BumpResetLabel>dev</BumpResetLabel>
+  </PropertyGroup>
+
+  <Target Name="PostPackNugetDeploy" AfterTargets="Pack" Condition="$(Configuration) == 'Release'">
+    <Exec Command="nuget.exe push $(ProjectDir)bin\$(Configuration)\$(ProjectName).$(Version).nupkg $(NuGetSourceKey) -Source $(NuGetSource) -Verbosity Detailed" />
+  </Target>
 
   <ItemGroup>
     <ProjectReference Include="..\Mapbox.Platform\Mapbox.Platform.csproj" />
