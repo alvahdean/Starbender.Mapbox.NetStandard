@@ -5,13 +5,13 @@
 //-----------------------------------------------------------------------
 
 namespace Mapbox.Utils
-{
+{ 
     /// <summary> Collection of constants used across the project. </summary>
     public static class Constants
     {
         /// <summary> Base URL for all the Mapbox APIs. </summary>
         public const string BaseAPI = "https://api.mapbox.com/";
-
+    
         /// <summary> Mercator projection max latitude limit. </summary>
         public const double LatitudeMax = 85.0511;
 

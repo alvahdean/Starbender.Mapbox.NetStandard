@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------
 
 namespace Mapbox.Platform
-{
+{ 
     /// <summary> A handle to an asynchronous request. </summary>
     public interface IAsyncRequest
     {
