@@ -4,16 +4,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Mapbox.Platform {
+namespace Mapbox.Platform
+{
+    /// <summary> A handle to an asynchronous request. </summary>
+    public interface IAsyncRequest
+    {
+        /// <summary> True after the request has finished. </summary>
+        bool IsCompleted { get; }
 
-
-	/// <summary> A handle to an asynchronous request. </summary>
-	public interface IAsyncRequest {
-
-		/// <summary> True after the request has finished. </summary>
-		bool IsCompleted { get; }
-
-		/// <summary> Cancel the ongoing request, preventing it from firing a callback. </summary>
-		void Cancel();
-	}
+        /// <summary> Cancel the ongoing request, preventing it from firing a callback. </summary>
+        void Cancel();
+    }
 }

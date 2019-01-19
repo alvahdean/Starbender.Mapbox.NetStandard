@@ -6,15 +6,14 @@
 
 namespace Mapbox.Map
 {
+    using System;
     using System.Collections.ObjectModel;
 
     using Mapbox.Utils;
-    using Mapbox.Platform;
-    //   using Mapbox.VectorTile;
-    //using Mapbox.VectorTile.ExtensionMethods;
-    using System;
-
     using Mapbox.Vector.Tile;
+
+    // using Mapbox.VectorTile;
+    // using Mapbox.VectorTile.ExtensionMethods;
 
     /// <summary>
     ///    A decoded vector tile, as specified by the
@@ -62,39 +61,6 @@ namespace Mapbox.Map
             }
         }
 
-
-        //TODO: uncomment if 'VectorTile' class changes from 'sealed'
-        //protected override void Dispose(bool disposeManagedResources)
-        //~VectorTile()
-        //{
-        //    Dispose(false);
-        //}
-
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        //TODO: change signature if 'VectorTile' class changes from 'sealed'
-        //protected override void Dispose(bool disposeManagedResources)
-        public void Dispose(bool disposeManagedResources)
-        {
-            if (!isDisposed)
-            {
-                if (disposeManagedResources)
-                {
-                    //TODO implement IDisposable with Mapbox.VectorTile.VectorTile
-                    if (null != data)
-                    {
-                        data = null;
-                    }
-                }
-            }
-        }
-
-
         /// <summary>
         /// <para>Gets the vector in a GeoJson format.</para>
         /// <para>
@@ -114,29 +80,38 @@ namespace Mapbox.Map
             get
             {
                 throw new NotImplementedException();
-                //return this.data.ToGeoJson((ulong)Id.Z, (ulong)Id.X, (ulong)Id.Y, 0);
+
+                // return this.data.ToGeoJson((ulong)Id.Z, (ulong)Id.X, (ulong)Id.Y, 0);
             }
         }
 
-
-        /// <summary>
-        /// Gets all availble layer names.
-        /// See available layers and features <see href="https://www.mapbox.com/vector-tiles/mapbox-streets-v7/">here</see>.
-        /// </summary>
-        /// <returns>Collection of availble layers.</returns>
-        /// <example>
-        /// Inspect the LayerNames.
-        /// <code>
-        /// var layerNames = vectorTile.LayerNames();
-        /// foreach (var layer in layerNames)
-        /// {
-        /// 	Console.Write("Layer: " + layer);
-        /// }
-        /// </code>
-        /// </example>
-        public ReadOnlyCollection<string> LayerNames()
+        // TODO: uncomment if 'VectorTile' class changes from 'sealed'
+        // protected override void Dispose(bool disposeManagedResources)
+        // ~VectorTile()
+        // {
+        // Dispose(false);
+        // }
+        public void Dispose()
         {
-            return this.data.LayerNames();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        // TODO: change signature if 'VectorTile' class changes from 'sealed'
+        // protected override void Dispose(bool disposeManagedResources)
+        public void Dispose(bool disposeManagedResources)
+        {
+            if (!isDisposed)
+            {
+                if (disposeManagedResources)
+                {
+                    // TODO implement IDisposable with Mapbox.VectorTile.VectorTile
+                    if (null != data)
+                    {
+                        data = null;
+                    }
+                }
+            }
         }
 
         // FIXME: Why don't these work?
@@ -161,12 +136,30 @@ namespace Mapbox.Map
             return this.data.GetLayer(layerName);
         }
 
+        /// <summary>
+        /// Gets all availble layer names.
+        /// See available layers and features <see href="https://www.mapbox.com/vector-tiles/mapbox-streets-v7/">here</see>.
+        /// </summary>
+        /// <returns>Collection of availble layers.</returns>
+        /// <example>
+        /// Inspect the LayerNames.
+        /// <code>
+        /// var layerNames = vectorTile.LayerNames();
+        /// foreach (var layer in layerNames)
+        /// {
+        /// 	Console.Write("Layer: " + layer);
+        /// }
+        /// </code>
+        /// </example>
+        public ReadOnlyCollection<string> LayerNames()
+        {
+            return this.data.LayerNames();
+        }
 
         internal override TileResource MakeTileResource(string mapId)
         {
             return TileResource.MakeVector(Id, mapId);
         }
-
 
         internal override bool ParseTileData(byte[] data)
         {
@@ -184,6 +177,5 @@ namespace Mapbox.Map
                 return false;
             }
         }
-
     }
 }

@@ -9,10 +9,10 @@ namespace Mapbox.Geocoding
     using System;
     using System.Text;
 
-    using Newtonsoft.Json;
-
     using Mapbox.Platform;
     using Mapbox.Utils.JsonConverters;
+
+    using Newtonsoft.Json;
 
     /// <summary>
     ///     Wrapper around the <see href="https://www.mapbox.com/api-documentation/#geocoding">
@@ -27,6 +27,17 @@ namespace Mapbox.Geocoding
         public Geocoder(IFileSource fileSource)
         {
             this.fileSource = fileSource;
+        }
+
+        /// <summary>
+        /// Deserialize the geocode response string into a <see cref="GeocodeResponse"/>.
+        /// </summary>
+        /// <param name="str">JSON String.</param>
+        /// <returns>A <see cref="GeocodeResponse"/>.</returns>
+        /// <typeparam name="T">Forward or reverse geocode. </typeparam>
+        public T Deserialize<T>(string str)
+        {
+            return JsonConvert.DeserializeObject<T>(str, JsonConverters.Converters);
         }
 
         /// <summary> Performs asynchronously a geocoding lookup. </summary>
@@ -73,17 +84,6 @@ namespace Mapbox.Geocoding
 
                         callback(data);
                     });
-        }
-
-        /// <summary>
-        /// Deserialize the geocode response string into a <see cref="GeocodeResponse"/>.
-        /// </summary>
-        /// <param name="str">JSON String.</param>
-        /// <returns>A <see cref="GeocodeResponse"/>.</returns>
-        /// <typeparam name="T">Forward or reverse geocode. </typeparam>
-        public T Deserialize<T>(string str)
-        {
-            return JsonConvert.DeserializeObject<T>(str, JsonConverters.Converters);
         }
     }
 }

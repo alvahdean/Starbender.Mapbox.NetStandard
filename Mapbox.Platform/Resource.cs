@@ -7,9 +7,7 @@
 namespace Mapbox.Platform
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Linq;
 
     /// <summary> Abstract class representing a Mapbox resource URL. </summary>
@@ -25,7 +23,7 @@ namespace Mapbox.Platform
         /// <summary> Encodes a URI with a querystring. </summary>
         /// <param name="values"> Querystring values. </param>
         /// <returns> Encoded URL. </returns>
-        protected static String EncodeQueryString(IEnumerable<KeyValuePair<string, string>> values)
+        protected static string EncodeQueryString(IEnumerable<KeyValuePair<string, string>> values)
         {
             if (values != null)
             {

@@ -271,11 +271,11 @@ namespace Mapbox.Geocoding
                                                                     "zw"
                                                                 };
 
-        // Required
-        private string query;
-
         // Optional
         private bool? autocomplete;
+
+        // Optional
+        private Vector2dBounds? bbox;
 
         // Optional
         private string[] country;
@@ -283,28 +283,14 @@ namespace Mapbox.Geocoding
         // Optional
         private Vector2d? proximity;
 
-        // Optional
-        private Vector2dBounds? bbox;
+        // Required
+        private string query;
 
         /// <summary> Initializes a new instance of the <see cref="ForwardGeocodeResource" /> class.</summary>
         /// <param name="query"> Place name for forward geocoding. </param>
         public ForwardGeocodeResource(string query)
         {
             this.Query = query;
-        }
-
-        /// <summary> Gets or sets the place name for forward geocoding. </summary>
-        public override string Query
-        {
-            get
-            {
-                return this.query;
-            }
-
-            set
-            {
-                this.query = value;
-            }
         }
 
         /// <summary> Gets or sets the autocomplete option. </summary>
@@ -388,6 +374,20 @@ namespace Mapbox.Geocoding
             }
         }
 
+        /// <summary> Gets or sets the place name for forward geocoding. </summary>
+        public override string Query
+        {
+            get
+            {
+                return this.query;
+            }
+
+            set
+            {
+                this.query = value;
+            }
+        }
+
         /// <summary> Builds a forward geocode URL string. </summary>
         /// <returns> A complete, valid forward geocode URL. </returns>
         public override string GetUrl()
@@ -407,7 +407,7 @@ namespace Mapbox.Geocoding
 
             if (this.Country != null)
             {
-                opts.Add("country", ForwardGeocodeResource.GetUrlQueryFromArray<string>(this.Country));
+                opts.Add("country", GetUrlQueryFromArray<string>(this.Country));
             }
 
             if (this.Proximity != null)
