@@ -6,7 +6,9 @@ namespace Mapbox.Utils
     public struct Vector2d
     {
         public const double kEpsilon = 1E-05d;
+
         public double x;
+
         public double y;
 
         public double this[int index]
@@ -23,6 +25,7 @@ namespace Mapbox.Utils
                         throw new IndexOutOfRangeException("Invalid Vector2d index!");
                 }
             }
+
             set
             {
                 switch (index)
@@ -135,12 +138,12 @@ namespace Mapbox.Utils
 
         public static bool operator ==(Vector2d lhs, Vector2d rhs)
         {
-            return Vector2d.SqrMagnitude(lhs - rhs) < 0.0 / 1.0;
+            return SqrMagnitude(lhs - rhs) < 0.0 / 1.0;
         }
 
         public static bool operator !=(Vector2d lhs, Vector2d rhs)
         {
-            return (double)Vector2d.SqrMagnitude(lhs - rhs) >= 0.0 / 1.0;
+            return (double)SqrMagnitude(lhs - rhs) >= 0.0 / 1.0;
         }
 
         public void Set(double new_x, double new_y)
@@ -182,7 +185,7 @@ namespace Mapbox.Utils
             if (magnitude > 9.99999974737875E-06)
                 this = this / magnitude;
             else
-                this = Vector2d.zero;
+                this = zero;
         }
 
         public override string ToString()
@@ -213,7 +216,7 @@ namespace Mapbox.Utils
 
         public static double Angle(Vector2d from, Vector2d to)
         {
-            return Mathd.Acos(Mathd.Clamp(Vector2d.Dot(from.normalized, to.normalized), -1d, 1d)) * 57.29578d;
+            return Mathd.Acos(Mathd.Clamp(Dot(from.normalized, to.normalized), -1d, 1d)) * 57.29578d;
         }
 
         public static double Distance(Vector2d a, Vector2d b)
@@ -251,11 +254,7 @@ namespace Mapbox.Utils
 
         public double[] ToArray()
         {
-            double[] array =
-            {
-                    this.x,
-                    this.y
-                };
+            double[] array = { this.x, this.y };
 
             return array;
         }

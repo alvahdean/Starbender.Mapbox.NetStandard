@@ -1,0 +1,18 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+configuration: Debug
+platform: Any CPU
+clone_folder: C:\Development\Projects\Starbender\Libraries\Starbender.Mapbox.NetStandard
+before_build:
+- cmd: dotnet restore
+build:
+  verbosity: minimal
+test: off
+deploy:
+- provider: NuGet
+  server: http://nuget.starbendersystems.com/nuget/nuget
+  api_key:
+    secure: /GBqanseqbfAb5ul13Ss0ND8DcB7jzCJLeR/uZNvK4pOfhLGWfsEcxc+DEv6jyo+
+  skip_symbols: false
+  on:
+    branch: master

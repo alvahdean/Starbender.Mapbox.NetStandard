@@ -6,17 +6,17 @@
 
 namespace Mapbox.Map
 {
-	/// <summary>
-	///    A retina-resolution raster tile from the Mapbox Map API, a encoded image representing a geographic
-	///    bounding box. Usually JPEG or PNG encoded.
-	/// Like <see cref="T:Mapbox.Map.ClassicRasterTile"/>, but higher resolution.
+    /// <summary>
+    ///    A retina-resolution raster tile from the Mapbox Map API, a encoded image representing a geographic
+    ///    bounding box. Usually JPEG or PNG encoded.
+    /// Like <see cref="T:Mapbox.Map.ClassicRasterTile"/>, but higher resolution.
     /// See <see href="https://www.mapbox.com/api-documentation/#retina"> retina documentation </see>.
-	/// </summary>
+    /// </summary>
     public class ClassicRetinaRasterTile : ClassicRasterTile
-	{
-		internal override TileResource MakeTileResource(string mapId)
-		{
-			return TileResource.MakeClassicRetinaRaster(Id, mapId);
-		}
-	}
+    {
+        internal override TileResource MakeTileResource(string mapId)
+        {
+            return TileResource.MakeClassicRetinaRaster(Id, mapId);
+        }
+    }
 }

@@ -12,7 +12,6 @@ namespace Mapbox.Utils.JsonConverters
     using Newtonsoft.Json.Converters;
     using Newtonsoft.Json.Linq;
 
-
     /// <summary>
     /// Bbox to geo coordinate bounds converter.
     /// </summary>
@@ -53,24 +52,6 @@ namespace Mapbox.Utils.JsonConverters
         }
 
         /// <summary>
-        /// Writes the json.
-        /// </summary>
-        /// <param name="writer">A <see cref="JsonWriter"/>.</param>
-        /// <param name="value">The value to serialize.</param>
-        /// <param name="serializer">A <see cref="JsonSerializer"/>.</param>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            var val = (Vector2d)value;
-
-            Array valAsArray = val.ToArray();
-
-            // By default, Vector2d outputs an array with [lat, lon] order, but we want the reverse.
-            Array.Reverse(valAsArray);
-
-            serializer.Serialize(writer, valAsArray);
-        }
-
-        /// <summary>
         /// Reads the json.
         /// </summary>
         /// <returns>The serialized object.</returns>
@@ -88,6 +69,24 @@ namespace Mapbox.Utils.JsonConverters
             JArray coordinates = JArray.Load(reader);
 
             return Create(objectType, coordinates);
+        }
+
+        /// <summary>
+        /// Writes the json.
+        /// </summary>
+        /// <param name="writer">A <see cref="JsonWriter"/>.</param>
+        /// <param name="value">The value to serialize.</param>
+        /// <param name="serializer">A <see cref="JsonSerializer"/>.</param>
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var val = (Vector2d)value;
+
+            Array valAsArray = val.ToArray();
+
+            // By default, Vector2d outputs an array with [lat, lon] order, but we want the reverse.
+            Array.Reverse(valAsArray);
+
+            serializer.Serialize(writer, valAsArray);
         }
     }
 }
