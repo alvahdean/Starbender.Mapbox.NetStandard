@@ -13,7 +13,7 @@
     <Configurations>Debug;Release;DebugNet</Configurations>
     <ApplicationIcon>starbender.ico</ApplicationIcon>
 
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
 
     <NuGetSource Condition="'$(Configuration)' == 'Release'">http://nuget.starbendersystems.com/nuget/nuget</NuGetSource>
     <NuGetSourceKey Condition="'$(Configuration)' == 'Release'">802E277B3B75455E841FA307D82D514C</NuGetSourceKey>
@@ -35,7 +35,7 @@
   </Target>
   
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>
